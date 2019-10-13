@@ -9,7 +9,8 @@
 
 import requests
 from bs4 import BeautifulSoup
-import re
+import re																				# регулярные выражения
+import openpyxl																			# библиотека для Excel
 
 def get_html(url):
 	r = requests.get(url)
@@ -23,6 +24,17 @@ def get_total_pages(html):
 	
 	pages_len = len(pages)																# кол-во элементов в списке
 	print(str(pages_len) + '\n')
+	
+	try:
+		# читаем excel-файл
+		wb = openpyxl.load_workbook('base.xlsx')
+	except IOError:
+		# создаем новый excel-файл
+		wb = openpyxl.Workbook()
+		wb.create_sheet(title = 'Объявления', index = 0)
+	
+	# получаем лист, с которым будем работать
+	sheet = wb['Объявления']
 	
 	while (index_pages != pages_len):													# цикл обхода списка
 		pages1 = pages[index_pages]														# получаем элемент списка
@@ -46,8 +58,14 @@ def get_total_pages(html):
 		print(date)
 		print(href + '\n')
 		
-		index_pages += 1																# индекс следующего элемента
+		# запись в файл
+		sheet.append([title, price, date, href])
 		
+		index_pages += 1																# индекс следующего элемента
+	
+	# сохраняем файл
+	wb.save('base.xlsx')	
+	
 def main():
 	url = "https://www.avito.ru/ekaterinburg/avtomobili/s_probegom/inomarki/mehanika/benzin/levyy_rul/ne_bolee_dvuh/ne_bityy?cd=1&pmax=350000&pmin=150000&radius=200&user=1&f=188_901b20303"
 	
